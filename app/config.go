@@ -1,10 +1,10 @@
-package config
+package app
 
 import (
 	"io/ioutil"
 	"log"
 	"os"
-    yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
 )
 
 type Config struct {
@@ -36,8 +36,4 @@ func LoadConfig() {
             log.Fatalf("Unable to unmarshal config: %v", err)
         }
     }
-}
-
-func GetConfig() Config {
-	return config
 }

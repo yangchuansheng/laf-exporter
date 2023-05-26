@@ -1,32 +1,28 @@
 package main
 
 import (
-    "fmt"
+	"fmt"
 	"log"
 	"net/http"
+	"time"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"laf-exporter/internal/api"
-    "laf-exporter/internal/config"
-    "laf-exporter/internal/metrics"
+    "laf-exporter/app"
 )
 
 func main() {
-    config.LoadConfig()  // Load the config
+    app.LoadConfig()  // Load the config
 
     // Set up a ticker that triggers every 30 seconds
-    ticker := api.StartTicker(30)
+    ticker := time.NewTicker(30 * time.Second)
     defer ticker.Stop()
 
-    // Fetch metrics every 30 seconds
-    body, err := api.FetchMetrics()  // Fetch metrics from the API
-    if err != nil {
-        log.Printf("Failed to fetch metrics: %v", err)
-        return
-    }
+    go func() {
+        for {
+            app.FetchMetrics()  // Call fetchMetrics to populate the metrics
+            <-ticker.C // Wait for the next tick
+        }
+    }()
 
-    metrics.UpdateMetrics(body)  // Update the metrics with the fetched data
-
-    // Set up endpoints
     http.Handle("/metrics", promhttp.Handler())
 
     http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
